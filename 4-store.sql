@@ -1,5 +1,5 @@
--- Creates a trigger that decreases the quantity of an item after adding a new order
-
+-- SQL script that creates a trigger that decreases the
+-- quantity of an item after adding a new order.
 CREATE TRIGGER decrement
 AFTER INSERT
 ON orders
