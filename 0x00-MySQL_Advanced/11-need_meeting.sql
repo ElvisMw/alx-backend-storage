@@ -2,16 +2,9 @@
 -- SQL script that creates a view need_meeting that lists all students that
 -- have a score under 80 (strict) and no last_meeting or more than 1 month
 
-DELIMITER $$
-DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
-CREATE PROCEDURE ComputeAverageWeightedScoreForUser (IN user_id INT)
-BEGIN
-    UPDATE users set average_score = (SELECT
-    SUM(corrections.score * projects.weight) / SUM(projects.weight)
-    FROM corrections
-    INNER JOIN projects
-    ON projects.id = corrections.project_id
-    where corrections.user_id = user_id)
-    where users.id = user_id;
-END $$
-DELIMITER ;
+-- Define the view
+CREATE VIEW need_meeting AS
+SELECT *
+FROM students
+WHERE score < 80
+AND (last_meeting IS NULL OR last_meeting < DATE_SUB(NOW(), INTERVAL 1 MONTH));
