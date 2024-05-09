@@ -1,11 +1,11 @@
--- Select all users whose email addresses contain "gmail.com"
-SELECT *
-FROM users AS u1
-WHERE email LIKE '%gmail.com'
--- Check if there are no corresponding users with email addresses containing "yahoo.com"
-AND NOT EXISTS (
-    SELECT *
-    FROM users AS u2
-    WHERE u1.id = u2.id
-    AND u2.email LIKE '%yahoo.com%'
+-- Create table if it doesn't exist
+CREATE TABLE IF NOT EXISTS users (
+    -- Unique identifier for each user
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -- Email address of the user, must be unique
+    email VARCHAR(255) NOT NULL UNIQUE,
+    -- Name of the user
+    name VARCHAR(255),
+    -- Country of the user, limited to specific values
+    country ENUM('US', 'CO', 'TN') NOT NULL
 );
