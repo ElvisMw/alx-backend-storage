@@ -1,3 +1,2 @@
-// The script will contain commands to insert a document with the attribute name set to
-// "Holberton school" into theschool collection.
+// 2 insert
 db.school.insertOne({ "name": "Holberton school" })
