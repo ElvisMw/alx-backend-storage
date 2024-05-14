@@ -1,0 +1,2 @@
+// a script that executes the necessary command to switch to my_db.
+use my_db
