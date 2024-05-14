@@ -1,3 +1,2 @@
 // my comment
-db = db.getSiblingDB('<database_name>');
 db.school.insertOne({ "name": "Holberton school" });
