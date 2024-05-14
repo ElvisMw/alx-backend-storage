@@ -1,2 +1,2 @@
-// Inserting a document with name attribute as "Holberton school" into the school collection.
+// Inserting document with name attribute as "Holberton school" intoschool collectio
 db.school.insertOne({ "name": "Holberton school" });
