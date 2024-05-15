@@ -8,6 +8,7 @@ import uuid
 from typing import Callable, Union, Optional
 import functools
 
+
 def count_calls(method: Callable) -> Callable:
     """
     Decorator that counts the number of times a method is called.
