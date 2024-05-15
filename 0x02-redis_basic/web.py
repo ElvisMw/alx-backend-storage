@@ -1,38 +1,58 @@
 #!/usr/bin/env python3
+"""
+This module defines a function for fetching web pages with caching and tracking
+using Redis.
+"""
 import redis
 import requests
 from typing import Callable
 
+r = redis.Redis()
+
 
 def get_page(url: str) -> str:
     """
-    Retrieve a web page either from cache or from the internet.
+    Fetch the content of a web page and cache it in Redis with an expiration.
+
+    Track how many times a particular URL was accessed.
 
     Args:
-        url (str): The URL of the web page to retrieve.
+        url (str): The URL of the web page to fetch.
 
     Returns:
-        str: The contents of the web page.
+        str: The content of the web page.
     """
-    redis_client = redis.Redis()
-    count_key = f"count:{url}"
-    cache_key = f"cache:{url}"
+    """ Track the number of times the URL is accessed """
+    r.incr(f"count:{url}")
 
-    """ Increment the number of times this URL has been accessed """
-    redis_client.incr(count_key)
+    """ Check if the URL content is already cached """
+    cached_content = r.get(f"cached:{url}")
+    if cached_content:
+        return cached_content.decode('utf-8')
 
-    """" Check if the URL is already in the cache """
-    cached_page = redis_client.get(cache_key)
-
-    if cached_page:
-        """ If the URL is in the cache, return the cached page """
-        return cached_page.decode('utf-8')
-
-    """ If the URL is not in the cache, retrieve the page from the internet """
+    """ Fetch the web page content """
     response = requests.get(url)
+    content = response.text
 
-    """ Set the page in the cache with a TTL of 10 seconds """
-    redis_client.setex(cache_key, 10, response.text)
+    """Cache the content with an expiration time of 10 seconds"""
+    r.setex(f"cached:{url}", 10, content)
 
-    """ Return the page """
-    return response.text
+    return content
+
+
+def replay(method: Callable):
+    """
+    Displays the history of calls to a particular method.
+
+    Args:
+        method (Callable): The method to replay the call history for.
+    """
+    cache = method.__self__
+    input_key = f"{method.__qualname__}:inputs"
+    output_key = f"{method.__qualname__}:outputs"
+    inputs = cache._redis.lrange(input_key, 0, -1)
+    outputs = cache._redis.lrange(output_key, 0, -1)
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+    for inp, out in zip(inputs, outputs):
+        print(f"{method.__qualname__}(*{inp.decode('utf-8')}) -> "
+              f"{out.decode('utf-8')}")
