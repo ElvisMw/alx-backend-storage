@@ -99,25 +99,29 @@ class Cache:
     def get_str(self, key: str) -> str:
         """Retrieve a string from the cache
 
-        If the key is not found in the cache, or the data is not a string, returns None
+        If the key is not found in the cache, or the
+        data is not a string, returns None
 
         Args:
             key: The key used to store the data
 
         Returns:
-            The data stored at the key as a string, or None if the key is not found or the data is not a string
+            The data stored at the key as a string, or None if
+            the key is not found or the data is not a string
         """
         return self.get(key, lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str) -> int:
         """Retrieve an integer from the cache
 
-        If the key is not found in the cache, or the data is not an integer, returns None
+        If the key is not found in the cache, or the data is not an
+        integer, returns None
 
         Args:
             key: The key used to store the data
 
         Returns:
-            The data stored at the key as an integer, or None if the key is not found or the data is not an integer
+            The data stored at the key as an integer, or None if
+            the key is not found or the data is not an integer
         """
         return self.get(key, int)
