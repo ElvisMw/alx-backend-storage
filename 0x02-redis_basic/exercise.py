@@ -1,57 +1,78 @@
 #!/usr/bin/env python3
 import redis
 import uuid
-from typing import Callable, Union, Optional
+from typing import Callable, Optional, Union
+import functools
+
+
+# Decorator to count the number of times a method is called
+def count_calls(method: Callable) -> Callable:
+    """Count the number of times a method is called
+
+    Args:
+        method: Method to be wrapped
+
+    Returns:
+        Wrapped method
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Increments the number of times the method is called
+
+        Args:
+            self: Cache instance
+            *args: Variable length argument list
+            **kwargs: Arbitrary keyword arguments
+
+        Returns:
+            Whatever the wrapped method returns
+        """
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
-    """
-    Simple cache using Redis
+    """Cache class
 
-    Exposes methods to store data, retrieve data,
-    and retrieve data in different formats
+    Stores data in Redis
     """
     def __init__(self):
-        """
-        Create a new Cache object
+        """Constructor
 
-        Creates a new Redis connection and
-        flushes the database (to start with a clean slate)
+        Connects to Redis
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
-        """
-        Store data in the cache
+        """Store data in Redis
 
-        Generates a new key, sets the key to the data,
-        and returns the key
+        Creates a new key and stores the data in it
 
         Args:
-            data: The data to store
+            data: Data to be stored
 
         Returns:
-            The key used to store the data
+            Key where the data is stored
         """
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
     def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
-        """
-        Retrieve data from the cache
+        """Get data from Redis
 
-        Retrieves data from the cache using the key,
-        and optionally applies a function to the data
+        Gets data from the specified key
 
         Args:
-            key: The key used to store the data
-            fn: A function to apply to the data
+            key: Key where the data is stored
+            fn: Function to be applied to the data, if present
 
         Returns:
-            The data retrieved from the cache,
-            or None if the key does not exist
+            Data from the key, or None if not found
         """
         data = self._redis.get(key)
         if data is None:
@@ -61,33 +82,27 @@ class Cache:
         return data
 
     def get_str(self, key: str) -> str:
-        """
-        Retrieve a string from the cache
+        """Get string data from Redis
 
-        Retrieves data from the cache using the key,
-        and decodes it to a string
+        Gets data from the specified key and decodes it as a string
 
         Args:
-            key: The key used to store the data
+            key: Key where the data is stored
 
         Returns:
-            The data retrieved from the cache,
-            or None if the key does not exist
+            String data from the key, or None if not found
         """
         return self.get(key, lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str) -> int:
-        """
-        Retrieve an integer from the cache
+        """Get int data from Redis
 
-        Retrieves data from the cache using the key,
-        and converts it to an integer
+        Gets data from the specified key and converts it to an integer
 
         Args:
-            key: The key used to store the data
+            key: Key where the data is stored
 
         Returns:
-            The data retrieved from the cache,
-            or None if the key does not exist
+            Integer data from the key, or None if not found
         """
         return self.get(key, int)
