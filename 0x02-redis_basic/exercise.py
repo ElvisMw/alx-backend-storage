@@ -26,6 +26,7 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
     return wrapper
 
+
 def call_history(method: Callable) -> Callable:
     """
     Decorator that records the history of inputs and outputs for a method.
@@ -42,19 +43,28 @@ def call_history(method: Callable) -> Callable:
         output_key = f"{method.__qualname__}:outputs"
         self._redis.rpush(input_key, str(args))
         result = method(self, *args, **kwargs)
-        self._redis.rpush(output_key, result)
+        self._redis.rpush(output_key, str(result))
         return result
     return wrapper
 
-def replay_calls(method):
-    """Display the history of calls of a particular method."""
+
+def replay(method: Callable):
+    """
+    Displays the history of calls of a particular method.
+
+    Args:
+        method (Callable): The method to replay the call history for.
+    """
     cache = method.__self__
-    input_list_key = f"{method.__qualname__}:inputs"
-    output_list_key = f"{method.__qualname__}:outputs"
-    input_values = cache._redis.lrange(input_list_key, 0, -1)
-    output_values = cache._redis.lrange(output_list_key, 0, -1)
-    for inp, out in zip(input_values, output_values):
-        print(f"{method.__qualname__}(*{inp.decode()}) -> {out.decode()}")
+    input_key = f"{method.__qualname__}:inputs"
+    output_key = f"{method.__qualname__}:outputs"
+    inputs = cache._redis.lrange(input_key, 0, -1)
+    outputs = cache._redis.lrange(output_key, 0, -1)
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+    for inp, out in zip(inputs, outputs):
+        print(f"{method.__qualname__}(*{inp.decode('utf-8')}) -> "
+              f"{out.decode('utf-8')}")
+
 
 class Cache:
     """
@@ -83,7 +93,8 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float, None]:
+    def get(self, key: str, fn: Optional[Callable] = None
+            ) -> Union[str, bytes, int, float, None]:
         """
         Retrieve data from Redis and optionally apply a conversion function.
 
