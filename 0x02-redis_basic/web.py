@@ -7,6 +7,7 @@ import redis
 import requests
 from typing import Callable
 
+# Initialize Redis client
 r = redis.Redis()
 
 
@@ -22,20 +23,22 @@ def get_page(url: str) -> str:
     Returns:
         str: The content of the web page.
     """
-    """ Track the number of times the URL is accessed """
+    # Track the number of times the URL is accessed
     r.incr(f"count:{url}")
 
-    """ Check if the URL content is already cached """
+    # Check if the URL content is already cached
     cached_content = r.get(f"cached:{url}")
     if cached_content:
         return cached_content.decode('utf-8')
 
-    """ Fetch the web page content """
+    # Fetch the web page content
     response = requests.get(url)
     content = response.text
 
-    """Cache the content with an expiration time of 10 seconds"""
-    r.setex(f"cached:{url}", 10, content)
+    # Cache the content with an expiration time of 10 seconds
+    set_result = r.setex(f"cached:{url}", 10, content)
+    if set_result != b'OK':
+        print(f"Failed to cache the content for URL: {url}")
 
     return content
 
