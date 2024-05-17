@@ -1,2 +1,1 @@
-// Inserting document with name attribute as "Holberton school" intoschool collectio
 db.school.insertOne({ "name": "Holberton school" });
