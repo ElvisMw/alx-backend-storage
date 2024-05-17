@@ -1,6 +1,7 @@
-// Update script to add the address attribute to documents with
-// name "Holberton school"
-db.school.updateMany(
-    { "name": "Holberton school" }, // Filter to match documents with name "Holberton school"
-    { $set: { "address": "972 Mission street" } } // Set the address attribute with the specified value
+// Update script to add the address attribute to
+// documents with name "Holberton school"
+db.school.update(
+    {name: "Holberton school"},
+    {"$set": {address: "972 Mission street"}},
+    {multi: true}
 );
